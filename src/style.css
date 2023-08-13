@@ -1,0 +1,10 @@
+/* Let's create a title class */
+.title {
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.running {
+    color: greenyellow
+    
+}
