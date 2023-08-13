@@ -81,7 +81,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def refresh_toggled(self, button):
         self.containers = list_containers()
-        print(f'refresh toggled: {self.containers=}')
+        # print(f'refresh toggled: {self.containers=}')
         self.update_container_stack(containers=self.containers, stack=self.stack, stack_sidebar=self.stack_sidebar)
 
     def container_log_tailer(self, text_view: Gtk.TextView, container_name: str):
@@ -122,7 +122,7 @@ class MainWindow(Gtk.ApplicationWindow):
         # remove all previous elements
         page : Gtk.StackPage
         num_pages = len(stack.get_pages())
-        print(f'stack has {num_pages} pages')
+        # print(f'stack has {num_pages} pages')
         old_pages = [page for page in stack.get_pages()]
         
         # if the container still exists, do not re-create stackpage
