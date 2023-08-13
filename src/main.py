@@ -4,12 +4,6 @@ gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 
 import re
-
-
-def remove_control_characters(s):
-    return re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]', '', s)
-
-
 from typing import List, Dict
 import docker
 from gi.repository import Gtk, Gdk, Adw, GLib
@@ -25,6 +19,10 @@ Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(
 ), css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
 thread_dict: Dict[str, StoppableThread] = {}
+
+
+def remove_control_characters(s):
+    return re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]', '', s)
 
 
 class MainWindow(Gtk.ApplicationWindow):
