@@ -67,7 +67,10 @@ class MainWindow(Gtk.ApplicationWindow):
         self.content_box.append(self.stack)
         self.window_box.append(self.content_box)
         # Add the stack to the main box
-
+        
+        # shortcuts
+        # self.shortcut_controller = Gtk.ShortcutController()
+        
         self.set_default_size(600, 600)
         self.set_title("CaptainsLog")
 
@@ -121,15 +124,23 @@ class MainWindow(Gtk.ApplicationWindow):
         num_pages = len(stack.get_pages())
         print(f'stack has {num_pages} pages')
         old_pages = [page for page in stack.get_pages()]
-        for page in old_pages:
+        
+        # if the container still exists, do not re-create stackpage
+        current_container_names = [container.name for container in containers]
+        current_page_names = [page.get_name() for page in old_pages]
+        
+        
+        pages_to_remove = [page for page in old_pages if page.get_name() not in current_container_names]
+        for page in pages_to_remove:
             name = page.get_name()
-            print(f'{page=}, name={name}')
+            print(f'removing page for container {name}')
             if name in thread_dict:
                 thread_dict[name].stop()
             thread_dict[name].join()
             stack.remove(page.get_child())
         
-        for container in containers:
+        containers_to_add = [container for container in containers if container.name not in current_page_names] 
+        for container in containers_to_add:
             container_scroll_window = Gtk.ScrolledWindow(vexpand=True, hexpand=True)
 
             container_info = Gtk.TextView()
