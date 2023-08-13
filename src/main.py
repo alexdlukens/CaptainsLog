@@ -40,19 +40,19 @@ class MainWindow(Gtk.ApplicationWindow):
         self.refresh_button.connect('clicked', self.refresh_toggled)
         self.header.pack_start(self.refresh_button)
 
-        self.box1 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.box1.set_vexpand(True)
+        self.window_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.window_box.set_vexpand(True)
+        self.set_child(self.window_box)
+        
         self.sidebar_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self.main_box.set_hexpand(True)
-        self.main_box.set_vexpand(True)
-        self.set_child(self.box1)
+        self.sidebar_box.set_vexpand(True)
+        
+        self.content_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.content_box.set_hexpand(True)
+        self.content_box.set_vexpand(True)
 
         # Create a stack to hold multiple pages
         self.stack = Gtk.Stack()
-        # self.stack.set_transition_type(
-        #     Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
-        # self.stack.set_transition_duration(500)
 
         self.stack_sidebar = Gtk.StackSidebar()
         self.stack_sidebar.set_stack(self.stack)
@@ -60,12 +60,12 @@ class MainWindow(Gtk.ApplicationWindow):
         self.update_container_stack(containers=self.containers, stack=self.stack, stack_sidebar=self.stack_sidebar)
         
         self.sidebar_box.append(self.stack_sidebar)
-        self.sidebar_box.set_vexpand(True)
+        
         self.stack_sidebar.set_size_request(100, 100)
 
-        self.box1.append(self.sidebar_box)
-        self.main_box.append(self.stack)
-        self.box1.append(self.main_box)
+        self.window_box.append(self.sidebar_box)
+        self.content_box.append(self.stack)
+        self.window_box.append(self.content_box)
         # Add the stack to the main box
 
         self.set_default_size(600, 600)
@@ -86,23 +86,31 @@ class MainWindow(Gtk.ApplicationWindow):
         dc = docker.from_env()
         container: Container = dc.containers.get(container_name)
         text_view.set_wrap_mode(Gtk.WrapMode.WORD)
-        container_textbuf = text_view.get_buffer()
+        
         since_time = 0.001
         while True:
             new_since_time = datetime.datetime.utcnow()
             container_logs = container.logs(since=since_time, until=new_since_time)
             since_time = new_since_time
             if container_logs:
-                new_text = container_logs.decode('utf-8')
-                new_text = remove_control_characters(new_text)
-                GLib.idle_add(self.update_container_log, container_textbuf, new_text)
-                if current_thread.stopped():
-                    return
-                time.sleep(0.5)
+                # only update UI when new logs generated
+                new_text = container_logs.decode('iso-8859-1') 
+                new_text = remove_control_characters(new_text) # strip control characters other than newline
+                GLib.idle_add(self.update_container_log, text_view, new_text)
+            if current_thread.stopped():
+                # break from infinite loop when thread is stopped (e.g. on update)
+                return
+            time.sleep(0.5)
 
 
-    def update_container_log(self, container_textbuf: Gtk.TextBuffer, new_text: str):
-        
+    def update_container_log(self, text_view: Gtk.TextView, new_text: str):
+        """Perform the actual updating of the TextBuffer with additional text
+
+        Args:
+            container_textbuf (Gtk.TextBuffer): TextBuffer to append to
+            new_text (str): _description_
+        """
+        container_textbuf = text_view.get_buffer()
         end_iter = container_textbuf.get_end_iter()
         container_textbuf.insert(end_iter, new_text)
         return  
@@ -122,17 +130,17 @@ class MainWindow(Gtk.ApplicationWindow):
             stack.remove(page.get_child())
         
         for container in containers:
+            container_scroll_window = Gtk.ScrolledWindow(vexpand=True, hexpand=True)
+
             container_info = Gtk.TextView()
-            # container_info.set_wrap_mode(Gtk.WrapMode.WORD)
-            # container_textbuf = container_info.get_buffer()
-            # container_logs = container.logs(since=0.1).decode('iso-8859-1')
-            # container_logs = remove_control_characters(container_logs)
-            # container_textbuf.set_text(f'Hello: {container_logs}')
+            container_scroll_window.set_child(container_info)
+
+            # tail docker logs in separate thread, calling back to main Gtk thread to update TextView
             thread_dict[container.name] = StoppableThread(target=self.container_log_tailer, args=[container_info, container.name])
             thread_dict[container.name].daemon = True
             thread_dict[container.name].start()
             
-            stack.add_titled(child=container_info, name=container.name, title=container.name)
+            stack.add_titled(child=container_scroll_window, name=container.name, title=container.name)
             
 
 
