@@ -143,20 +143,17 @@ class MainWindow(Gtk.ApplicationWindow):
         for page in pages_to_kill_thread:
             name = page.get_name()
             print(f'removing page for container {name}')
-            if name in thread_dict:
-                thread_dict[name].stop()
+            thread_dict[name].stop()
             thread_dict[name].join()
 
-        containers_to_add = [
-            container for container in containers]
         for container in containers:
-
-            # restart thread if previously joined
+            # restart thread if container has been seen previously
             if container.name in current_page_names:
                 if not thread_dict[container.name].is_alive():
                     thread_dict[container.name].start()
                 continue
 
+            # otherwise create new stack object for new container
             container_scroll_window = Gtk.ScrolledWindow(
                 vexpand=True, hexpand=True)
 
