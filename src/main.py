@@ -84,13 +84,20 @@ class MainWindow(Gtk.ApplicationWindow):
         self.update_container_stack(
             containers=self.containers, stack=self.stack, stack_sidebar=self.stack_sidebar)
 
+    def clear_container_log(self, text_view: Gtk.TextView):
+        buffer = text_view.get_buffer()
+        buffer.delete(buffer.get_start_iter(), buffer.get_end_iter())
+
     def container_log_tailer(self, text_view: Gtk.TextView, container_name: str):
         current_thread = threading.current_thread()
         dc = docker.from_env()
         container: Container = dc.containers.get(container_name)
         text_view.set_wrap_mode(Gtk.WrapMode.WORD)
 
-        since_time = 0.001
+        # erase container text view on thread start
+        GLib.idle_add(self.clear_container_log, text_view)
+
+        since_time = None
         while True:
             new_since_time = datetime.datetime.utcnow()
             container_logs = container.logs(
@@ -130,19 +137,26 @@ class MainWindow(Gtk.ApplicationWindow):
         current_container_names = [container.name for container in containers]
         current_page_names = [page.get_name() for page in old_pages]
 
-        pages_to_remove = [
-            page for page in old_pages if page.get_name() not in current_container_names]
-        for page in pages_to_remove:
+        # if the container is dead and thread is still alive, we should join the thread
+        pages_to_kill_thread = [
+            page for page in old_pages if (page.get_name() not in current_container_names) and thread_dict[page.get_name()].is_alive()]
+        for page in pages_to_kill_thread:
             name = page.get_name()
             print(f'removing page for container {name}')
             if name in thread_dict:
                 thread_dict[name].stop()
             thread_dict[name].join()
-            stack.remove(page.get_child())
 
         containers_to_add = [
-            container for container in containers if container.name not in current_page_names]
-        for container in containers_to_add:
+            container for container in containers]
+        for container in containers:
+
+            # restart thread if previously joined
+            if container.name in current_page_names:
+                if not thread_dict[container.name].is_alive():
+                    thread_dict[container.name].start()
+                continue
+
             container_scroll_window = Gtk.ScrolledWindow(
                 vexpand=True, hexpand=True)
 
