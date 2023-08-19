@@ -25,6 +25,13 @@ def remove_control_characters(s):
     return re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]', '', s)
 
 
+def join_threads(threads_to_join: List[str]):
+    for name in threads_to_join:
+        # print(f'removing page for container {name}')
+        thread_dict[name].stop()
+        thread_dict[name].join()
+
+
 class MainWindow(Gtk.ApplicationWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -127,6 +134,12 @@ class MainWindow(Gtk.ApplicationWindow):
         return
 
     def update_container_stack(self, containers: List[Container], stack: Gtk.Stack):
+        """Maintain proper stack of containers, and threads to tail their logs correspondingly
+
+        Args:
+            containers (List[Container]): current list of containers
+            stack (Gtk.Stack): _description_
+        """
         # remove all previous elements
         page: Gtk.StackPage
         current_pages = [page for page in stack.get_pages()]
@@ -136,13 +149,10 @@ class MainWindow(Gtk.ApplicationWindow):
         current_page_names = [page.get_name() for page in current_pages]
 
         # if the container is dead and thread is still alive, we should join the thread
-        pages_to_kill_thread = [
-            page for page in current_pages if (page.get_name() not in current_container_names) and thread_dict[page.get_name()].is_alive()]
-        for page in pages_to_kill_thread:
-            name = page.get_name()
-            # print(f'removing page for container {name}')
-            thread_dict[name].stop()
-            thread_dict[name].join()
+        threads_to_join = [
+            page_name for page_name in current_page_names if (page_name not in current_container_names) and thread_dict[page_name].is_alive()]
+
+        join_threads(threads_to_join=threads_to_join)
 
         for container in containers:
             # restart thread if container has been seen previously
@@ -169,12 +179,13 @@ class MainWindow(Gtk.ApplicationWindow):
             new_button.connect('clicked', self.on_sidebar_button_clicked)
             sidebar_row.set_child(new_button)
             self.sidebar_box.append(sidebar_row)
-            
+
             stack.add_titled(child=container_scroll_window,
                              name=container.name, title=container.name)
 
     def on_sidebar_button_clicked(self, button: Gtk.Button):
         self.stack.set_visible_child_name(button.get_label())
+
 
 class MyApp(Adw.Application):
     def __init__(self, **kwargs):
