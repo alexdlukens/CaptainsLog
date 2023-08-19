@@ -25,11 +25,33 @@ def remove_control_characters(s):
     return re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]', '', s)
 
 
-def join_threads(threads_to_join: List[str]):
+def join_threads(current_page_names, current_container_names):
+    # if the container is dead and thread is still alive, we should join the thread
+    threads_to_join = []
+    for page_name in current_page_names:
+        if page_name in current_container_names:
+            continue
+        if not thread_dict[page_name].is_alive():
+            continue
+        threads_to_join.append(page_name)
+
     for name in threads_to_join:
         # print(f'removing page for container {name}')
         thread_dict[name].stop()
         thread_dict[name].join()
+
+
+def prepare_container_log_elements():
+    """Make GTK elements for individual container log
+    """
+
+    # otherwise create new stack object for new container
+    container_scroll_window = Gtk.ScrolledWindow(
+        vexpand=True, hexpand=True)
+
+    container_info = Gtk.TextView()
+    container_scroll_window.set_child(container_info)
+    return container_scroll_window, container_info
 
 
 class MainWindow(Gtk.ApplicationWindow):
@@ -140,19 +162,14 @@ class MainWindow(Gtk.ApplicationWindow):
             containers (List[Container]): current list of containers
             stack (Gtk.Stack): _description_
         """
-        # remove all previous elements
         page: Gtk.StackPage
         current_pages = [page for page in stack.get_pages()]
-
-        # if the container still exists, do not re-create stackpage
-        current_container_names = [container.name for container in containers]
         current_page_names = [page.get_name() for page in current_pages]
+        current_container_names = [container.name for container in containers]
 
         # if the container is dead and thread is still alive, we should join the thread
-        threads_to_join = [
-            page_name for page_name in current_page_names if (page_name not in current_container_names) and thread_dict[page_name].is_alive()]
-
-        join_threads(threads_to_join=threads_to_join)
+        join_threads(current_page_names=current_page_names,
+                     current_container_names=current_container_names)
 
         for container in containers:
             # restart thread if container has been seen previously
@@ -161,12 +178,7 @@ class MainWindow(Gtk.ApplicationWindow):
                     thread_dict[container.name].start()
                 continue
 
-            # otherwise create new stack object for new container
-            container_scroll_window = Gtk.ScrolledWindow(
-                vexpand=True, hexpand=True)
-
-            container_info = Gtk.TextView()
-            container_scroll_window.set_child(container_info)
+            container_scroll_window, container_info = prepare_container_log_elements()
 
             # tail docker logs in separate threads, calling back to main Gtk thread to update TextView
             thread_dict[container.name] = StoppableThread(
