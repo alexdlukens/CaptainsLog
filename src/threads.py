@@ -1,5 +1,4 @@
 import threading
-from threads import StoppableThread
 from typing import Dict, List
 
 
