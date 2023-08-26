@@ -24,3 +24,9 @@
     background-color: grey;
     
 }
+
+.border-right {
+    border-right: 4pt;
+    border-right-style: solid;
+    border-color: @headerbar_shade_color;
+}

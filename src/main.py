@@ -46,6 +46,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
         self.sidebar_box = Gtk.ListBox()
         self.sidebar_box.set_vexpand(True)
+        self.sidebar_box.add_css_class('border-right')
 
         self.content_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.content_box.set_hexpand(True)
