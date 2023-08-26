@@ -65,7 +65,6 @@ def prepare_container_log_elements():
     return container_scroll_window, container_info
 
 
-
 def update_container_log(text_view: Gtk.TextView, new_text: str):
     """Perform the actual updating of the TextBuffer with additional text
 
@@ -82,6 +81,7 @@ def update_container_log(text_view: Gtk.TextView, new_text: str):
 def clear_container_log(text_view: Gtk.TextView):
     buffer = text_view.get_buffer()
     buffer.delete(buffer.get_start_iter(), buffer.get_end_iter())
+
 
 def container_log_tailer(text_view: Gtk.TextView, container_name: str):
     current_thread = threading.current_thread()

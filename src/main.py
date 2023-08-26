@@ -32,14 +32,13 @@ class MainWindow(Gtk.ApplicationWindow):
         self.header = Gtk.HeaderBar()
         self.set_titlebar(self.header)
         # self.stack_child_dict: Dict[str, Gtk.StackPage] = {}
-        
+
         self.refresh_button = Gtk.Button(label="Refresh")
         self.refresh_button.set_icon_name("view-refresh-symbolic")
         self.refresh_button.connect('clicked', self.refresh_toggled)
 
         self.header.pack_start(self.refresh_button)
 
-        
         # Main Content area boxes
         self.window_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.window_box.set_vexpand(True)
@@ -57,7 +56,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
         # Create a stack to hold multiple pages
 
-        self.sidebar_button_dict: Dict[str, Gtk.Button]= {}
+        self.sidebar_button_dict: Dict[str, Gtk.Button] = {}
         self.stack = Gtk.Stack()
         self.stack_sidebar = Gtk.StackSidebar()
         self.stack_sidebar.set_stack(self.stack)
@@ -67,19 +66,17 @@ class MainWindow(Gtk.ApplicationWindow):
         self.update_container_stack()
         self.content_box.append(self.stack)
 
-        # update stack every .25 seconds 
+        # update stack every .25 seconds
         # TODO: Make this on event from docker daemon
         GLib.timeout_add(250, self.update_container_stack)
-        
+
         # set default size, title
         self.set_default_size(600, 600)
         self.set_title("CaptainsLog")
 
-
     def refresh_toggled(self, button):
         """When refresh button pressed, update container stack"""
         self.update_container_stack()
-
 
     def update_container_stack(self):
         """Maintain proper stack of containers, and threads to tail their logs correspondingly
@@ -92,7 +89,8 @@ class MainWindow(Gtk.ApplicationWindow):
         page: Gtk.StackPage
         current_pages = [page for page in self.stack.get_pages()]
         current_page_names = [page.get_name() for page in current_pages]
-        current_container_names = [container.name for container in self.containers]
+        current_container_names = [
+            container.name for container in self.containers]
 
         # if the container is dead and thread is still alive, we should join the thread
         join_threads(thread_dict=thread_dict,
@@ -102,7 +100,8 @@ class MainWindow(Gtk.ApplicationWindow):
         for container in self.containers:
             container.reload()
             if container.name in self.sidebar_button_dict:
-                update_container_status_css(button=self.sidebar_button_dict[container.name], status=container.status)
+                update_container_status_css(
+                    button=self.sidebar_button_dict[container.name], status=container.status)
             # restart thread if container has been seen previously
             if container.name in current_page_names:
                 if not thread_dict[container.name].is_alive():
@@ -110,7 +109,7 @@ class MainWindow(Gtk.ApplicationWindow):
                 continue
 
             container_scroll_window, container_info = prepare_container_log_elements()
-            
+
             # tail docker logs in separate threads, calling back to main Gtk thread to update TextView
             thread_dict[container.name] = StoppableThread(
                 target=container_log_tailer, args=[container_info, container.name])
@@ -127,7 +126,7 @@ class MainWindow(Gtk.ApplicationWindow):
             self.stack.add_titled(child=container_scroll_window,
                                   name=container.name,
                                   title=container.name)
-        
+
         return True
 
     def on_sidebar_button_clicked(self, button: Gtk.Button):
