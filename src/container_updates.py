@@ -86,9 +86,10 @@ def container_log_tailer(text_view: Gtk.TextView, container_name: str):
     text_view.set_wrap_mode(Gtk.WrapMode.WORD)
 
     # erase container text view on thread start
-    GLib.idle_add(clear_container_log, text_view)
+    if 'since_time' not in locals():
+        GLib.idle_add(clear_container_log, text_view)
+        since_time = None
 
-    since_time = None
     while True:
         if current_thread.stopped():
             # break from infinite loop when thread is stopped (e.g. on update)
