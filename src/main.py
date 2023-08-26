@@ -173,7 +173,6 @@ class MainWindow(Gtk.ApplicationWindow):
             stack (Gtk.Stack): _description_
         """
         self.containers: List[Container] = list_containers()
-        print(f'updating stack')
         page: Gtk.StackPage
         current_pages = [page for page in stack.get_pages()]
         current_page_names = [page.get_name() for page in current_pages]
