@@ -86,18 +86,26 @@ class MainWindow(Gtk.ApplicationWindow):
             containers (List[Container]): current list of containers
             stack (Gtk.Stack): _description_
         """
+        
+        # update list of docker containers
         self.containers: List[Container] = list_containers()
+        
+        # get current stack pages
+        #TODO: Support having pages that are not associated
+        # with a docker container (e.g. welcome page)
         page: Gtk.StackPage
-        current_pages = [page for page in self.stack.get_pages()]
-        current_page_names = [page.get_name() for page in current_pages]
+        current_pages: List[Gtk.StackPage] = [page for page in self.stack.get_pages()]
+        current_page_names = [page.get_name() for page in current_pages] 
         current_container_names = [
             container.name for container in self.containers]
 
-        # if the container is dead and thread is still alive, we should join the thread
+        # if the container is gone and thread is still alive, we should join the thread
         join_threads(thread_dict=thread_dict,
                      current_page_names=current_page_names,
                      current_container_names=current_container_names)
-
+        
+        # update sidebar button colors, add new stack elements
+        # for new docker containers
         for container in self.containers:
             container.reload()
             if container.name in self.sidebar_button_dict:
@@ -117,18 +125,22 @@ class MainWindow(Gtk.ApplicationWindow):
             thread_dict[container.name].daemon = True
             thread_dict[container.name].start()
 
-            sidebar_row = Gtk.ListBoxRow()
-            new_button = Gtk.Button(label=container.name)
-            new_button.connect('clicked', self.on_sidebar_button_clicked)
-            self.sidebar_button_dict[container.name] = new_button
-            sidebar_row.set_child(new_button)
-            self.sidebar_box.append(sidebar_row)
+            self.add_sidebar_item(container=container)
 
             self.stack.add_titled(child=container_scroll_window,
                                   name=container.name,
                                   title=container.name)
 
         return True
+
+    def add_sidebar_item(self, container: Container):
+        sidebar_row = Gtk.ListBoxRow()
+        new_button = Gtk.Button(label=container.name)
+        new_button.connect('clicked', self.on_sidebar_button_clicked)
+        self.sidebar_button_dict[container.name] = new_button
+        sidebar_row.set_child(new_button)
+        self.sidebar_box.append(sidebar_row)
+
 
     def on_sidebar_button_clicked(self, button: Gtk.Button):
         self.stack.set_visible_child_name(button.get_label())
