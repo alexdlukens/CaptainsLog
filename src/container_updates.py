@@ -1,8 +1,4 @@
 import gi
-
-gi.require_version('Gtk', '4.0')
-gi.require_version('Adw', '1')
-
 import datetime
 import re
 import threading
@@ -108,4 +104,4 @@ def container_log_tailer(text_view: Gtk.TextView, container_name: str):
             new_text = remove_control_characters(new_text)
             GLib.idle_add(update_container_log, text_view, new_text)
 
-        time.sleep(0.5)
+        time.sleep(0.5) #TODO: make this a setting in the application

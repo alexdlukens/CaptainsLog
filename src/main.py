@@ -10,11 +10,11 @@ import docker
 from docker.models.containers import Container
 from gi.repository import Adw, Gdk, GLib, Gtk
 
+from threads import StoppableThread, join_threads
 from container_updates import (prepare_container_log_elements,
                                update_container_status_css,
                                container_log_tailer)
 from docker_utils import list_containers
-from threads import StoppableThread, join_threads
 
 css_provider = Gtk.CssProvider()
 css_provider.load_from_path('src/style.css')
