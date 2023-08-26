@@ -66,16 +66,31 @@ def update_container_log(text_view: Gtk.TextView, new_text: str):
     return
 
 def update_container_status_css(button: Gtk.Button, status: str):
+    """Update button with css class based on docker container status
+
+    Args:
+        button (Gtk.Button): button corresponding to docker container in sidebar
+        status (str): current status of the docker container
+    """
+    
     css_classes = button.get_css_classes()
+
+    # name of new css class
+    new_container_class = f'docker-container-{status}'
+
+    # get all the css classes we have added
     container_classes = []
     for class_name in css_classes:
-        if class_name.startswith('container-'):
+        if class_name.startswith('docker-container-'):
             container_classes.append(class_name)
     
+    # already has the right class
+    if new_container_class in container_classes and len(container_classes) == 1:
+        return
+
     for class_name in container_classes:
         button.remove_css_class(class_name)
-    
-    button.add_css_class(f'container-{status}')
+    button.add_css_class(new_container_class)
 
 
 def clear_container_log(text_view: Gtk.TextView):
@@ -93,6 +108,9 @@ def container_log_tailer(text_view: Gtk.TextView, container_name: str):
 
     since_time = None
     while True:
+        if current_thread.stopped():
+            # break from infinite loop when thread is stopped (e.g. on update)
+            return
         new_since_time = datetime.datetime.utcnow()
         container_logs = container.logs(
             since=since_time, until=new_since_time)
@@ -103,9 +121,7 @@ def container_log_tailer(text_view: Gtk.TextView, container_name: str):
             # strip control characters other than newline
             new_text = remove_control_characters(new_text)
             GLib.idle_add(update_container_log, text_view, new_text)
-        if current_thread.stopped():
-            # break from infinite loop when thread is stopped (e.g. on update)
-            return
+
         time.sleep(0.5)
 
 

@@ -4,23 +4,23 @@
     font-weight: bold;
 }
 
-.container-created {
+.docker-container-created {
     background-color: lightyellow;
     
 }
-.container-running {
+.docker-container-running {
     background-color: greenyellow;
     
 }
-.container-restarting {
+.docker-container-restarting {
     background-color: lightsalmon;
     
 }
-.container-exited {
+.docker-container-exited {
     background-color: lightcoral;
     
 }
-.container-dead {
+.docker-container-dead {
     background-color: grey;
     
 }
