@@ -4,7 +4,23 @@
     font-weight: bold;
 }
 
-.running {
-    color: greenyellow;
+.container-created {
+    background-color: lightyellow;
+    
+}
+.container-running {
+    background-color: greenyellow;
+    
+}
+.container-restarting {
+    background-color: lightsalmon;
+    
+}
+.container-exited {
+    background-color: lightcoral;
+    
+}
+.container-dead {
+    background-color: grey;
     
 }
