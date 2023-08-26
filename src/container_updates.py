@@ -94,14 +94,17 @@ def container_log_tailer(text_view: Gtk.TextView, container_name: str):
             # break from infinite loop when thread is stopped (e.g. on update)
             return
         new_since_time = datetime.datetime.utcnow()
-        container_logs: bytes = container.logs(
-            since=since_time, until=new_since_time)
-        since_time = new_since_time
-        if container_logs:
-            # only update UI when new logs generated
-            new_text = container_logs.decode('utf-8')
-            # strip control characters other than newline
-            new_text = remove_control_characters(new_text)
-            GLib.idle_add(update_container_log, text_view, new_text)
+        try:
+            container_logs: bytes = container.logs(
+                since=since_time, until=new_since_time)
+            since_time = new_since_time
+            if container_logs:
+                # only update UI when new logs generated
+                new_text = container_logs.decode('utf-8')
+                # strip control characters other than newline
+                new_text = remove_control_characters(new_text)
+                GLib.idle_add(update_container_log, text_view, new_text)
+        except:
+            return
 
-        time.sleep(0.5) #TODO: make this a setting in the application
+        time.sleep(0.5)  # TODO: make this a setting in the application
