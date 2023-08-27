@@ -5,23 +5,31 @@
 }
 
 .docker-container-created {
-    background-color: lightyellow;
+    background-color: #f9f06b;
     
 }
 .docker-container-running {
-    background-color: greenyellow;
+    background-color: #8ff0a4;
     
 }
 .docker-container-restarting {
-    background-color: lightsalmon;
+    background-color: #ffbe6f;
     
 }
 .docker-container-exited {
-    background-color: lightcoral;
+    background-color: #ff7b63;
+    
+}
+.docker-container-healthy {
+    background-color: #8ff0a4;
+    
+}
+.docker-container-unhealthy {
+    background-color: #ffbe6f;
     
 }
 .docker-container-dead {
-    background-color: grey;
+    background-color: #9a9996;
     
 }
 
