@@ -11,7 +11,17 @@ a = Analysis(
     datas=[('./src/CaptainsLog/style.css', './CaptainsLog')],
     hiddenimports=[],
     hookspath=[],
-    hooksconfig={},
+    hooksconfig={
+        "gi": {
+            "icons": ["Adwaita"],
+            "themes": ["Adwaita"],
+            "languages": ["en_US"],
+            "module-versions": {
+                "Gtk": "4.0",
+                "GtkSource": "4",
+            },
+        },
+    },
     runtime_hooks=[],
     excludes=[],
     win_no_prefer_redirects=False,
