@@ -41,7 +41,6 @@ class MainWindow(Gtk.ApplicationWindow):
         self.menu = Gio.Menu()
         self.menu.append_item(Gio.MenuItem().new("About", "app.about"))
 
-        self.menu.append_item(Gio.MenuItem().new("Quit", "app.quit"))
         quit_action = Gio.SimpleAction(name="quit")
         quit_action.connect("activate", self.quit_activated)
         app.add_action(quit_action)
@@ -55,7 +54,8 @@ class MainWindow(Gtk.ApplicationWindow):
         self.about_dialog = Gtk.AboutDialog(authors=["Alexander Lukens"],
                                             website="https://alukens.com",
                                             version="v2023.08.26",
-                                            program_name="CaptainsLog")
+                                            program_name="CaptainsLog",
+                                            comments="Thank you for using my app. This is a first for me")
 
         about_action = Gio.SimpleAction(name="about")
         about_action.connect("activate", self.about_activated)
@@ -170,10 +170,6 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def on_sidebar_button_clicked(self, button: Gtk.Button):
         self.stack.set_visible_child_name(button.get_label())
-
-    def open_menu(self, button: Gtk.Button):
-        print('menu button pressed')
-        pass
 
     def quit_activated(self, action, parameter):
         # print("quit")<Ctrl>
