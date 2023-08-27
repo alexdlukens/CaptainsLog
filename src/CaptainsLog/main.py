@@ -4,20 +4,26 @@ gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 
 import sys
+import os
 from typing import Dict, List
 
 import docker
 from docker.models.containers import Container
-from gi.repository import Adw, Gdk, GLib, Gtk
+from gi.repository import Adw, Gdk, GLib, Gtk, Gio
 
-from threads import StoppableThread, join_threads
-from container_updates import (prepare_container_log_elements,
+from .threads import StoppableThread, join_threads
+from .container_updates import (prepare_container_log_elements,
                                update_container_status_css,
                                container_log_tailer)
-from docker_utils import list_containers
+from .docker_utils import list_containers
+from pathlib import Path
 
+cl_path = os.path.dirname(sys.modules['CaptainsLog'].__file__)
+
+css_path = Path(cl_path).joinpath('style.css')
+print(f'{css_path=}')
 css_provider = Gtk.CssProvider()
-css_provider.load_from_path('src/style.css')
+css_provider.load_from_path(str(css_path))
 Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(
 ), css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
@@ -37,7 +43,33 @@ class MainWindow(Gtk.ApplicationWindow):
         self.refresh_button.set_icon_name("view-refresh-symbolic")
         self.refresh_button.connect('clicked', self.refresh_toggled)
 
+        # setup Menu
+        self.menu = Gio.Menu()
+        self.menu.append_item(Gio.MenuItem().new("About", "app.about"))
+
+        quit_action = Gio.SimpleAction(name="quit")
+        quit_action.connect("activate", self.quit_activated)
+        app.add_action(quit_action)
+
+        app.set_accels_for_action("app.quit", ["<Ctrl>q"])
+
+        self.menu_button = Gtk.MenuButton()
+        self.menu_button.set_icon_name("open-menu-symbolic")
+        self.menu_button.set_menu_model(self.menu)
+
+        self.about_dialog = Gtk.AboutDialog(authors=["Alexander Lukens"],
+                                            website="https://alukens.com",
+                                            version="v2023.08.26",
+                                            program_name="CaptainsLog",
+                                            comments="Thank you for using my app. This is a first for me")
+
+        about_action = Gio.SimpleAction(name="about")
+        about_action.connect("activate", self.about_activated)
+        app.add_action(about_action)
+
+        # add buttons to top bar
         self.header.pack_start(self.refresh_button)
+        self.header.pack_end(self.menu_button)
 
         # Main Content area boxes
         self.window_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
@@ -86,16 +118,17 @@ class MainWindow(Gtk.ApplicationWindow):
             containers (List[Container]): current list of containers
             stack (Gtk.Stack): _description_
         """
-        
+
         # update list of docker containers
         self.containers: List[Container] = list_containers()
-        
+
         # get current stack pages
-        #TODO: Support having pages that are not associated
+        # TODO: Support having pages that are not associated
         # with a docker container (e.g. welcome page)
         page: Gtk.StackPage
-        current_pages: List[Gtk.StackPage] = [page for page in self.stack.get_pages()]
-        current_page_names = [page.get_name() for page in current_pages] 
+        current_pages: List[Gtk.StackPage] = [
+            page for page in self.stack.get_pages()]
+        current_page_names = [page.get_name() for page in current_pages]
         current_container_names = [
             container.name for container in self.containers]
 
@@ -103,7 +136,7 @@ class MainWindow(Gtk.ApplicationWindow):
         join_threads(thread_dict=thread_dict,
                      current_page_names=current_page_names,
                      current_container_names=current_container_names)
-        
+
         # update sidebar button colors, add new stack elements
         # for new docker containers
         for container in self.containers:
@@ -141,9 +174,16 @@ class MainWindow(Gtk.ApplicationWindow):
         sidebar_row.set_child(new_button)
         self.sidebar_box.append(sidebar_row)
 
-
     def on_sidebar_button_clicked(self, button: Gtk.Button):
         self.stack.set_visible_child_name(button.get_label())
+
+    def quit_activated(self, action, parameter):
+        # print("quit")<Ctrl>
+        app.quit()
+        pass
+
+    def about_activated(self, action, parameter):
+        self.about_dialog.show()
 
 
 class MyApp(Adw.Application):
@@ -157,4 +197,3 @@ class MyApp(Adw.Application):
 
 
 app = MyApp(application_id="com.example.GtkApplication")
-app.run(sys.argv)
