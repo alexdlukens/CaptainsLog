@@ -37,11 +37,10 @@ class MainWindow(Gtk.ApplicationWindow):
         self.refresh_button.set_icon_name("view-refresh-symbolic")
         self.refresh_button.connect('clicked', self.refresh_toggled)
 
+        # setup Menu
         self.menu = Gio.Menu()
-        self.menu.append("About")
+        self.menu.append_item(Gio.MenuItem().new("About", "app.about"))
 
-        # quit_item = Gio.MenuItem()
-        # quit_item
         self.menu.append_item(Gio.MenuItem().new("Quit", "app.quit"))
         quit_action = Gio.SimpleAction(name="quit")
         quit_action.connect("activate", self.quit_activated)
@@ -49,10 +48,18 @@ class MainWindow(Gtk.ApplicationWindow):
 
         app.set_accels_for_action("app.quit", ["<Ctrl>q"])
 
-        # preferences menu
         self.menu_button = Gtk.MenuButton()
         self.menu_button.set_icon_name("open-menu-symbolic")
         self.menu_button.set_menu_model(self.menu)
+
+        self.about_dialog = Gtk.AboutDialog(authors=["Alexander Lukens"],
+                                            website="https://alukens.com",
+                                            version="v2023.08.26",
+                                            program_name="CaptainsLog")
+
+        about_action = Gio.SimpleAction(name="about")
+        about_action.connect("activate", self.about_activated)
+        app.add_action(about_action)
 
         # add buttons to top bar
         self.header.pack_start(self.refresh_button)
@@ -169,9 +176,12 @@ class MainWindow(Gtk.ApplicationWindow):
         pass
 
     def quit_activated(self, action, parameter):
-        # print("quit")
+        # print("quit")<Ctrl>
         app.quit()
         pass
+
+    def about_activated(self, action, parameter):
+        self.about_dialog.show()
 
 
 class MyApp(Adw.Application):
