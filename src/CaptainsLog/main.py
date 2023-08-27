@@ -77,14 +77,17 @@ class MainWindow(Gtk.ApplicationWindow):
         self.window_box.set_vexpand(True)
         self.set_child(self.window_box)
 
-        self.sidebar_box = Gtk.ListBox()
-        self.sidebar_box.set_vexpand(True)
-        self.sidebar_box.add_css_class('border-right')
+        self.sidebar_box = Gtk.Box(
+            orientation=Gtk.Orientation.VERTICAL, vexpand=True)
+        self.sidebar_box.set_size_request(200, 100)
 
-        self.content_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self.content_box.set_hexpand(True)
-        self.content_box.set_vexpand(True)
+        self.sidebar_button_list = Gtk.ListBox(
+            vexpand=True, css_classes=['border-right'])
 
+        self.content_box = Gtk.Box(
+            orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
+
+        self.sidebar_box.append(self.sidebar_button_list)
         self.window_box.append(self.sidebar_box)
         self.window_box.append(self.content_box)
 
@@ -92,9 +95,14 @@ class MainWindow(Gtk.ApplicationWindow):
 
         self.sidebar_button_dict: Dict[str, Gtk.Button] = {}
         self.stack = Gtk.Stack()
-        self.stack_sidebar = Gtk.StackSidebar()
-        self.stack_sidebar.set_stack(self.stack)
-        self.stack_sidebar.set_size_request(100, 100)
+
+        overview_box = Gtk.Box(vexpand=True, hexpand=True)
+        self.add_sidebar_item(item_name="overview-page", item_label="Overview")
+        self.stack.add_titled(
+            overview_box, name="overview-page", title="Overview")
+
+        self.stack.set_visible_child(
+            self.stack.get_child_by_name("overview-page"))
 
         # initial stack updating
         self.update_container_stack()
@@ -130,6 +138,10 @@ class MainWindow(Gtk.ApplicationWindow):
         current_pages: List[Gtk.StackPage] = [
             page for page in self.stack.get_pages()]
         current_page_names = [page.get_name() for page in current_pages]
+        # filter pages depending on if it belongs to a container or not
+        current_page_names = [
+            name for name in current_page_names if name != 'overview-page']
+
         current_container_names = [
             container.name for container in self.containers]
 
@@ -159,7 +171,7 @@ class MainWindow(Gtk.ApplicationWindow):
             thread_dict[container.name].daemon = True
             thread_dict[container.name].start()
 
-            self.add_sidebar_item(container=container)
+            self.add_sidebar_item(item_name=container.name)
 
             self.stack.add_titled(child=container_scroll_window,
                                   name=container.name,
@@ -167,16 +179,18 @@ class MainWindow(Gtk.ApplicationWindow):
 
         return True
 
-    def add_sidebar_item(self, container: Container):
+    def add_sidebar_item(self, item_name: str, item_label: str = None):
+        if item_label is None:
+            item_label = item_name
         sidebar_row = Gtk.ListBoxRow()
-        new_button = Gtk.Button(label=container.name)
+        new_button = Gtk.Button(name=item_name, label=item_label)
         new_button.connect('clicked', self.on_sidebar_button_clicked)
-        self.sidebar_button_dict[container.name] = new_button
+        self.sidebar_button_dict[item_name] = new_button
         sidebar_row.set_child(new_button)
-        self.sidebar_box.append(sidebar_row)
+        self.sidebar_button_list.append(sidebar_row)
 
     def on_sidebar_button_clicked(self, button: Gtk.Button):
-        self.stack.set_visible_child_name(button.get_label())
+        self.stack.set_visible_child_name(button.get_name())
 
     def quit_activated(self, action, parameter):
         # print("quit")<Ctrl>
