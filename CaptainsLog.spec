@@ -8,7 +8,8 @@ a = Analysis(
     ['main_script.py'],
     pathex=['./src/'],
     binaries=[],
-    datas=[('./src/CaptainsLog/style.css', './CaptainsLog')],
+    datas=[('./src/CaptainsLog/style.css', './CaptainsLog'),
+           ('./src/CaptainsLog/com.alexdlukens/icons', './CaptainsLog')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={
