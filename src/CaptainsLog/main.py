@@ -1,4 +1,5 @@
 import gi
+import json
 
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
@@ -20,6 +21,7 @@ from pathlib import Path
 
 cl_path = os.path.dirname(sys.modules['CaptainsLog'].__file__)
 css_path = Path(cl_path).joinpath('style.css')
+icon_path = Path(cl_path).joinpath('./icons')
 
 css_provider = Gtk.CssProvider()
 css_provider.load_from_path(str(css_path))
@@ -33,6 +35,17 @@ class MainWindow(Gtk.ApplicationWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        theme = Gtk.IconTheme.get_for_display(Gdk.Display.get_default())
+        theme.add_search_path(str(icon_path))
+        theme.add_search_path(str(icon_path.joinpath('./icon_development')))
+        # print(theme.get_icon_sizes("com.alexdlukens.CaptainsLog"))
+        # with open('dump.json', 'w') as f:
+        #     json.dump(theme.get_icon_names(), f)
+        # pixbuf = Gtk.Image.new_from_file(str(icon_path))
+        
+        # self.set_icon_name(pixbuf)
+        self.set_icon_name("com.alexdlukens.CaptainsLog")
+        # self.set_default_icon_name("com.alexdlukens.CaptainsLog")
         # Header Setup
         self.header = Gtk.HeaderBar()
         self.set_titlebar(self.header)
@@ -63,7 +76,9 @@ class MainWindow(Gtk.ApplicationWindow):
                                             license_type=Gtk.License.GPL_3_0,
                                             program_name="CaptainsLog",
                                             wrap_license=True,
-                                            comments="Thank you for using my app. This is a first for me")
+                                            comments="Thank you for using my app. This is a first for me",
+                                            icon_name="com.alexdlukens.CaptainsLog",
+                                            logo_icon_name="com.alexdlukens.CaptainsLog")
 
         about_action = Gio.SimpleAction(name="about")
         about_action.connect("activate", self.about_activated)
@@ -231,4 +246,4 @@ class MyApp(Adw.Application):
         self.win.present()
 
 
-app = MyApp(application_id="com.example.GtkApplication")
+app = MyApp(application_id="com.alexdlukens.CaptainsLog")
