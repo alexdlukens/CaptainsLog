@@ -3,6 +3,7 @@ import gi
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 
+import docker
 import sys
 import os
 from typing import Dict, List
@@ -96,7 +97,26 @@ class MainWindow(Gtk.ApplicationWindow):
         self.sidebar_button_dict: Dict[str, Gtk.Button] = {}
         self.stack = Gtk.Stack()
 
-        overview_box = Gtk.Box(vexpand=True, hexpand=True)
+        overview_box = Gtk.Box(vexpand=True, hexpand=True, orientation=Gtk.Orientation.VERTICAL)
+        welcome_label = Gtk.Label(name="welcome-label", label="Welcome to CaptainsLog", css_classes=["title", "overview-title"])
+        
+        dc = docker.from_env()
+        dc.configs.client
+        # docker overview metrics
+        welcome_content = """Docker socket location: {}
+        \n\nYou currently have {} docker containers tracked by the docker daemon.
+        \n\nSelect a container from the left to view its logs""".format(dc.api.base_url, len(docker.from_env().containers.list()))
+        welcome_text = Gtk.Label(name="welcome-text",
+                                 label=welcome_content,
+                                 wrap=True,
+                                 wrap_mode=Gtk.WrapMode.WORD,
+                                 justify=Gtk.Justification.CENTER,
+                                 css_classes=["welcome-text"],
+                                 )
+
+        overview_box.append(welcome_label)
+        overview_box.append(welcome_text)
+        
         self.add_sidebar_item(item_name="overview-page", item_label="Overview")
         self.stack.add_titled(
             overview_box, name="overview-page", title="Overview")
