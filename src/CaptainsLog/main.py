@@ -7,21 +7,19 @@ import sys
 import os
 from typing import Dict, List
 
-import docker
 from docker.models.containers import Container
 from gi.repository import Adw, Gdk, GLib, Gtk, Gio
 
 from .threads import StoppableThread, join_threads
 from .container_updates import (prepare_container_log_elements,
-                               update_container_status_css,
-                               container_log_tailer)
+                                update_container_status_css,
+                                container_log_tailer)
 from .docker_utils import list_containers
 from pathlib import Path
 
 cl_path = os.path.dirname(sys.modules['CaptainsLog'].__file__)
-
 css_path = Path(cl_path).joinpath('style.css')
-print(f'{css_path=}')
+
 css_provider = Gtk.CssProvider()
 css_provider.load_from_path(str(css_path))
 Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(
@@ -59,8 +57,11 @@ class MainWindow(Gtk.ApplicationWindow):
 
         self.about_dialog = Gtk.AboutDialog(authors=["Alexander Lukens"],
                                             website="https://alukens.com",
+                                            website_label="My Website",
                                             version="v2023.08.26",
+                                            license_type=Gtk.License.GPL_3_0,
                                             program_name="CaptainsLog",
+                                            wrap_license=True,
                                             comments="Thank you for using my app. This is a first for me")
 
         about_action = Gio.SimpleAction(name="about")
