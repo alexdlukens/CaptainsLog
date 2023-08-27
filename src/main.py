@@ -8,7 +8,7 @@ from typing import Dict, List
 
 import docker
 from docker.models.containers import Container
-from gi.repository import Adw, Gdk, GLib, Gtk
+from gi.repository import Adw, Gdk, GLib, Gtk, Gio
 
 from threads import StoppableThread, join_threads
 from container_updates import (prepare_container_log_elements,
@@ -37,7 +37,26 @@ class MainWindow(Gtk.ApplicationWindow):
         self.refresh_button.set_icon_name("view-refresh-symbolic")
         self.refresh_button.connect('clicked', self.refresh_toggled)
 
+        self.menu = Gio.Menu()
+        self.menu.append("About")
+
+        # quit_item = Gio.MenuItem()
+        # quit_item
+        self.menu.append_item(Gio.MenuItem().new("Quit", "app.quit"))
+        quit_action = Gio.SimpleAction(name="quit")
+        quit_action.connect("activate", self.quit_activated)
+        app.add_action(quit_action)
+
+        app.set_accels_for_action("app.quit", ["<Ctrl>q"])
+
+        # preferences menu
+        self.menu_button = Gtk.MenuButton()
+        self.menu_button.set_icon_name("open-menu-symbolic")
+        self.menu_button.set_menu_model(self.menu)
+
+        # add buttons to top bar
         self.header.pack_start(self.refresh_button)
+        self.header.pack_end(self.menu_button)
 
         # Main Content area boxes
         self.window_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
@@ -86,16 +105,17 @@ class MainWindow(Gtk.ApplicationWindow):
             containers (List[Container]): current list of containers
             stack (Gtk.Stack): _description_
         """
-        
+
         # update list of docker containers
         self.containers: List[Container] = list_containers()
-        
+
         # get current stack pages
-        #TODO: Support having pages that are not associated
+        # TODO: Support having pages that are not associated
         # with a docker container (e.g. welcome page)
         page: Gtk.StackPage
-        current_pages: List[Gtk.StackPage] = [page for page in self.stack.get_pages()]
-        current_page_names = [page.get_name() for page in current_pages] 
+        current_pages: List[Gtk.StackPage] = [
+            page for page in self.stack.get_pages()]
+        current_page_names = [page.get_name() for page in current_pages]
         current_container_names = [
             container.name for container in self.containers]
 
@@ -103,7 +123,7 @@ class MainWindow(Gtk.ApplicationWindow):
         join_threads(thread_dict=thread_dict,
                      current_page_names=current_page_names,
                      current_container_names=current_container_names)
-        
+
         # update sidebar button colors, add new stack elements
         # for new docker containers
         for container in self.containers:
@@ -141,9 +161,17 @@ class MainWindow(Gtk.ApplicationWindow):
         sidebar_row.set_child(new_button)
         self.sidebar_box.append(sidebar_row)
 
-
     def on_sidebar_button_clicked(self, button: Gtk.Button):
         self.stack.set_visible_child_name(button.get_label())
+
+    def open_menu(self, button: Gtk.Button):
+        print('menu button pressed')
+        pass
+
+    def quit_activated(self, action, parameter):
+        # print("quit")
+        app.quit()
+        pass
 
 
 class MyApp(Adw.Application):
