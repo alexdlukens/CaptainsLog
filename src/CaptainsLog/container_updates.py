@@ -59,7 +59,7 @@ def prepare_container_log_elements():
     container_action_bar = Gtk.ActionBar(hexpand=True,
                                          css_classes=['container-action-bar'])
     container_log_save_button = Gtk.Button(label="Save as")
-    container_action_bar.pack_end(container_log_save_button)
+    container_action_bar.pack_start(container_log_save_button)
 
     container_box.append(container_action_bar)
     
