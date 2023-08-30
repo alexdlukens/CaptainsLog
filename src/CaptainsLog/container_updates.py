@@ -52,13 +52,27 @@ def prepare_container_log_elements():
     """Make GTK elements for individual container log
     """
 
+    container_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,
+                            hexpand=True,
+                            vexpand=True)
+    
+    container_action_bar = Gtk.ActionBar(hexpand=True,
+                                         css_classes=['container-action-bar'])
+    container_log_save_button = Gtk.Button(label="Save as")
+    container_action_bar.pack_end(container_log_save_button)
+
+    container_box.append(container_action_bar)
+    
     # otherwise create new stack object for new container
     container_scroll_window = Gtk.ScrolledWindow(
         vexpand=True, hexpand=True)
 
     container_info = Gtk.TextView()
+    container_info.add_css_class('container-text')
     container_scroll_window.set_child(container_info)
-    return container_scroll_window, container_info
+    container_box.append(container_scroll_window)
+
+    return container_box, container_info
 
 
 def update_container_log(text_view: Gtk.TextView, new_text: str):
