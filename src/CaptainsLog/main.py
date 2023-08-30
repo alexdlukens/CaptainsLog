@@ -202,8 +202,9 @@ class MainWindow(Gtk.ApplicationWindow):
                     thread_dict[container.name].start()
                 continue
 
-            container_box, container_info = prepare_container_log_elements()
+            container_box, container_info, container_log_save_button = prepare_container_log_elements()
 
+            container_log_save_button.connect("clicked", self.on_container_save_click, container_info)
             # tail docker logs in separate threads, calling back to main Gtk thread to update TextView
             thread_dict[container.name] = StoppableThread(
                 target=container_log_tailer, args=[container_info, container.name])
@@ -242,6 +243,58 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def about_activated(self, action, parameter):
         self.about_dialog.show()
+    
+
+    def on_container_save_click(self, button: Gtk.Button, container_info: Gtk.TextView):
+        # container_info: Gtk.TextView = button.get_child()
+        
+        save_file_dialog = Gtk.FileChooserDialog(title="Save File As",
+                                                 transient_for=self,
+                                                 action=Gtk.FileChooserAction.SAVE)
+        save_file_dialog.add_button("Select", response_id=Gtk.ResponseType.ACCEPT)
+        save_file_dialog.connect("response", self.on_save_response, container_info.get_buffer())
+        save_file_dialog.show()
+
+    def on_save_response(self, dialog: Gtk.FileChooserDialog, response: Gtk.ResponseType, buffer: Gtk.TextBuffer):
+        print(f'in on_save_response')
+        
+        if response == Gtk.ResponseType.ACCEPT:
+            print(f'Accepted response')
+            self.save_text_buffer(file=dialog.get_file(), buffer=buffer)
+
+    def save_text_buffer(self, file: Gio.File, buffer: Gtk.TextBuffer):
+
+        # Retrieve the iterator at the start of the buffer
+        start = buffer.get_start_iter()
+        end = buffer.get_end_iter()
+
+        # Retrieve all the visible text between the two bounds
+        text = buffer.get_text(start, end, False)
+
+        # If there is nothing to save, return early
+        if not text:
+            return
+
+        bytes = GLib.Bytes.new(text.encode('utf-8'))
+
+        # Start the asynchronous operation to save the data into the file
+        file.replace_contents_bytes_async(bytes,
+                                        None,
+                                        False,
+                                        Gio.FileCreateFlags.NONE,
+                                        None,
+                                        self.save_file_complete)
+
+    def save_file_complete(self, file: Gio.File, result):
+        res = file.replace_contents_finish(result)
+        info = file.query_info("standard::display-name",
+                            Gio.FileQueryInfoFlags.NONE)
+        if info:
+            display_name = info.get_attribute_string("standard::display-name")
+        else:
+            display_name = file.get_basename()
+        if not res:
+            print(f"Unable to save {display_name}")
 
 
 class MyApp(Adw.Application):

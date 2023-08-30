@@ -7,7 +7,7 @@ from typing import List
 
 import docker
 from docker.models.containers import Container
-from gi.repository import GLib, Gtk
+from gi.repository import GLib, Gtk, Gio
 
 
 def remove_control_characters(s):
@@ -56,13 +56,6 @@ def prepare_container_log_elements():
                             hexpand=True,
                             vexpand=True)
     
-    container_action_bar = Gtk.ActionBar(hexpand=True,
-                                         css_classes=['container-action-bar'])
-    container_log_save_button = Gtk.Button(label="Save as")
-    container_action_bar.pack_start(container_log_save_button)
-
-    container_box.append(container_action_bar)
-    
     # otherwise create new stack object for new container
     container_scroll_window = Gtk.ScrolledWindow(
         vexpand=True, hexpand=True)
@@ -70,9 +63,17 @@ def prepare_container_log_elements():
     container_info = Gtk.TextView()
     container_info.add_css_class('container-text')
     container_scroll_window.set_child(container_info)
+
+    container_action_bar = Gtk.ActionBar(hexpand=True,
+                                         css_classes=['container-action-bar'])
+    container_log_save_button = Gtk.Button(label="Save as")
+    container_action_bar.pack_start(container_log_save_button)
+
+    container_box.append(container_action_bar)
     container_box.append(container_scroll_window)
 
-    return container_box, container_info
+    return container_box, container_info, container_log_save_button
+
 
 
 def update_container_log(text_view: Gtk.TextView, new_text: str):
@@ -89,6 +90,8 @@ def update_container_log(text_view: Gtk.TextView, new_text: str):
 
 
 def clear_container_log(text_view: Gtk.TextView):
+    """Erase all content from passed text view
+    """
     buffer = text_view.get_buffer()
     buffer.delete(buffer.get_start_iter(), buffer.get_end_iter())
 
