@@ -33,9 +33,7 @@
 }
 
 .border-right {
-    border-right: 4pt;
-    border-right-style: solid;
-    border-color: @borders;
+    border-right: 4px solid @borders;
 }
 
 .overview-title {
@@ -50,10 +48,9 @@
 }
 
 .container-text {
-    margin: 5px;
-    border-radius: 5px;
-    border: 1px solid
-    border-color: @borders;
+    padding: 5px;
+    border: 4px solid @borders;
+    border-left: 0px;
 }
 
 .container-action-bar {
