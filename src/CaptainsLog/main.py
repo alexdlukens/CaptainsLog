@@ -42,7 +42,7 @@ class MainWindow(Gtk.ApplicationWindow):
         # with open('dump.json', 'w') as f:
         #     json.dump(theme.get_icon_names(), f)
         # pixbuf = Gtk.Image.new_from_file(str(icon_path))
-        
+
         # self.set_icon_name(pixbuf)
         self.set_icon_name("com.alexdlukens.CaptainsLog")
         # self.set_default_icon_name("com.alexdlukens.CaptainsLog")
@@ -112,9 +112,13 @@ class MainWindow(Gtk.ApplicationWindow):
         self.sidebar_button_dict: Dict[str, Gtk.Button] = {}
         self.stack = Gtk.Stack()
 
-        overview_box = Gtk.Box(vexpand=True, hexpand=True, orientation=Gtk.Orientation.VERTICAL)
-        welcome_label = Gtk.Label(name="welcome-label", label="Welcome to CaptainsLog", css_classes=["title", "overview-title"])
-        
+        overview_box = Gtk.Box(vexpand=True,
+                               hexpand=True,
+                               orientation=Gtk.Orientation.VERTICAL)
+        welcome_label = Gtk.Label(name="welcome-label",
+                                  label="Welcome to CaptainsLog",
+                                  css_classes=["title", "overview-title"])
+
         dc = docker.from_env()
         dc.configs.client
         # docker overview metrics
@@ -131,7 +135,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
         overview_box.append(welcome_label)
         overview_box.append(welcome_text)
-        
+
         self.add_sidebar_item(item_name="overview-page", item_label="Overview")
         self.stack.add_titled(
             overview_box, name="overview-page", title="Overview")
@@ -198,7 +202,7 @@ class MainWindow(Gtk.ApplicationWindow):
                     thread_dict[container.name].start()
                 continue
 
-            container_scroll_window, container_info = prepare_container_log_elements()
+            container_box, container_info = prepare_container_log_elements()
 
             # tail docker logs in separate threads, calling back to main Gtk thread to update TextView
             thread_dict[container.name] = StoppableThread(
@@ -208,7 +212,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
             self.add_sidebar_item(item_name=container.name)
 
-            self.stack.add_titled(child=container_scroll_window,
+            self.stack.add_titled(child=container_box,
                                   name=container.name,
                                   title=container.name)
 
@@ -217,7 +221,7 @@ class MainWindow(Gtk.ApplicationWindow):
     def add_sidebar_item(self, item_name: str, item_label: str = None):
         if item_label is None:
             item_label = item_name
-        sidebar_row = Gtk.ListBoxRow()
+        sidebar_row = Gtk.ListBoxRow(name=item_name)
         new_button = Gtk.Button(name=item_name, label=item_label)
         new_button.connect('clicked', self.on_sidebar_button_clicked)
         self.sidebar_button_dict[item_name] = new_button
@@ -225,7 +229,11 @@ class MainWindow(Gtk.ApplicationWindow):
         self.sidebar_button_list.append(sidebar_row)
 
     def on_sidebar_button_clicked(self, button: Gtk.Button):
+
+        # update main view content based on clicked button
+        # and set selected row on sidebar
         self.stack.set_visible_child_name(button.get_name())
+        self.sidebar_button_list.select_row(button.get_parent())
 
     def quit_activated(self, action, parameter):
         # print("quit")<Ctrl>
