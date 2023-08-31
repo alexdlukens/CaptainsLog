@@ -15,7 +15,8 @@ from gi.repository import Adw, Gdk, GLib, Gtk, Gio
 from .threads import StoppableThread, join_threads
 from .container_updates import (prepare_container_log_elements,
                                 update_container_status_css,
-                                container_log_tailer)
+                                container_log_tailer,
+                                search_text)
 from .docker_utils import list_containers
 from pathlib import Path
 
@@ -202,9 +203,11 @@ class MainWindow(Gtk.ApplicationWindow):
                     thread_dict[container.name].start()
                 continue
 
-            container_box, container_info, container_log_save_button = prepare_container_log_elements()
+            container_box, container_info, container_log_save_button, container_log_search = prepare_container_log_elements()
 
             container_log_save_button.connect("clicked", self.on_container_save_click, container_info)
+            
+            container_log_search.connect("activate", search_text, container_info)
             # tail docker logs in separate threads, calling back to main Gtk thread to update TextView
             thread_dict[container.name] = StoppableThread(
                 target=container_log_tailer, args=[container_info, container.name])
