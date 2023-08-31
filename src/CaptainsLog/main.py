@@ -204,10 +204,12 @@ class MainWindow(Gtk.ApplicationWindow):
 
             container_box, container_info, container_log_save_button, container_log_search = prepare_container_log_elements()
 
+            # setup signal functionality
             container_log_save_button.connect("clicked", self.on_container_save_click, container_info)
-            
             container_log_search.connect("activate", self.next_match, container_info)
             container_log_search.connect("next-match", self.next_match, container_info)
+            container_log_search.connect("previous-match", self.prev_match, container_info)
+            
             # tail docker logs in separate threads, calling back to main Gtk thread to update TextView
             thread_dict[container.name] = StoppableThread(
                 target=container_log_tailer, args=[container_info, container.name])
@@ -329,6 +331,19 @@ class MainWindow(Gtk.ApplicationWindow):
                 self.search_text(widget=widget, text_view=text_view)
         else:
             self.search_text(widget=widget, text_view=text_view)
+
+    def prev_match(self, widget: Gtk.SearchEntry, text_view: Gtk.TextView):
+        if self.match_iter:
+            prev_iter = self.match_iter[0].backward_search(
+                widget.get_text(),
+                Gtk.TextSearchFlags.CASE_INSENSITIVE,
+                None,
+            )
+            if prev_iter:
+                self.match_iter = prev_iter
+                self.select_match(text_view=text_view)
+            else:
+                self.search_text(widget=widget, text_view=text_view)
 
 class MyApp(Adw.Application):
     def __init__(self, **kwargs):
