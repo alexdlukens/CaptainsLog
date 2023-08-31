@@ -89,22 +89,6 @@ def update_container_log(text_view: Gtk.TextView, new_text: str):
     container_textbuf.insert(end_iter, new_text)
     return
 
-def search_text(widget: Gtk.SearchEntry, text_view: Gtk.TextView):
-    search_text = widget.get_text()
-    start_iter = text_view.get_buffer().get_start_iter()
-    match_iter = start_iter.forward_search(
-        search_text, Gtk.TextSearchFlags.CASE_INSENSITIVE, None
-    )
-
-    if match_iter:
-        select_match(match_iter, text_view)
-
-def select_match(match_iter, text_view: Gtk.TextView):
-    match_start, match_end = match_iter
-    text_view.scroll_to_iter(match_start, 0.0, True, 0.5, 0.5)
-    textbuffer = text_view.get_buffer()
-    textbuffer.select_range(match_start, match_end)
-
 def clear_container_log(text_view: Gtk.TextView):
     """Erase all content from passed text view
     """

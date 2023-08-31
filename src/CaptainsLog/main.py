@@ -15,8 +15,7 @@ from gi.repository import Adw, Gdk, GLib, Gtk, Gio
 from .threads import StoppableThread, join_threads
 from .container_updates import (prepare_container_log_elements,
                                 update_container_status_css,
-                                container_log_tailer,
-                                search_text)
+                                container_log_tailer)
 from .docker_utils import list_containers
 from pathlib import Path
 
@@ -151,7 +150,7 @@ class MainWindow(Gtk.ApplicationWindow):
         # update stack every .25 seconds
         # TODO: Make this on event from docker daemon
         GLib.timeout_add(250, self.update_container_stack)
-
+        self.match_iter = None
         # set default size, title
         self.set_default_size(600, 600)
         self.set_title("CaptainsLog")
@@ -207,7 +206,8 @@ class MainWindow(Gtk.ApplicationWindow):
 
             container_log_save_button.connect("clicked", self.on_container_save_click, container_info)
             
-            container_log_search.connect("activate", search_text, container_info)
+            container_log_search.connect("activate", self.next_match, container_info)
+            container_log_search.connect("next-match", self.next_match, container_info)
             # tail docker logs in separate threads, calling back to main Gtk thread to update TextView
             thread_dict[container.name] = StoppableThread(
                 target=container_log_tailer, args=[container_info, container.name])
@@ -299,6 +299,36 @@ class MainWindow(Gtk.ApplicationWindow):
         if not res:
             print(f"Unable to save {display_name}")
 
+    def search_text(self, widget: Gtk.SearchEntry, text_view: Gtk.TextView):
+        search_text = widget.get_text()
+        start_iter = text_view.get_buffer().get_start_iter()
+        self.match_iter = start_iter.forward_search(
+            search_text, Gtk.TextSearchFlags.CASE_INSENSITIVE, None
+        )
+
+        if self.match_iter:
+            self.select_match(text_view)
+
+    def select_match(self, text_view: Gtk.TextView):
+        match_start, match_end = self.match_iter
+        text_view.scroll_to_iter(match_start, 0.0, True, 0.5, 0.5)
+        textbuffer = text_view.get_buffer()
+        textbuffer.select_range(match_start, match_end)
+
+    def next_match(self, widget: Gtk.SearchEntry, text_view: Gtk.TextView):
+        if self.match_iter:
+            next_iter = self.match_iter[1].forward_search(
+                widget.get_text(),
+                Gtk.TextSearchFlags.CASE_INSENSITIVE,
+                None,
+            )
+            if next_iter:
+                self.match_iter = next_iter
+                self.select_match(text_view)
+            else:
+                self.search_text(widget=widget, text_view=text_view)
+        else:
+            self.search_text(widget=widget, text_view=text_view)
 
 class MyApp(Adw.Application):
     def __init__(self, **kwargs):
