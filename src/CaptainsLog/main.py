@@ -251,12 +251,12 @@ class MainWindow(Gtk.ApplicationWindow):
         save_file_dialog = Gtk.FileChooserDialog(title="Save File As",
                                                  transient_for=self,
                                                  action=Gtk.FileChooserAction.SAVE)
-        save_file_dialog.add_button("Select", response_id=Gtk.ResponseType.ACCEPT)
+        save_button = save_file_dialog.add_button("Save", response_id=Gtk.ResponseType.ACCEPT)
+        save_button.add_css_class("success")
         save_file_dialog.connect("response", self.on_save_response, container_info.get_buffer())
         save_file_dialog.show()
 
     def on_save_response(self, dialog: Gtk.FileChooserDialog, response: Gtk.ResponseType, buffer: Gtk.TextBuffer):
-        print(f'in on_save_response')
         
         if response == Gtk.ResponseType.ACCEPT:
             self.save_text_buffer(file=dialog.get_file(), buffer=buffer)
