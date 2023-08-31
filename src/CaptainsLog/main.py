@@ -259,8 +259,8 @@ class MainWindow(Gtk.ApplicationWindow):
         print(f'in on_save_response')
         
         if response == Gtk.ResponseType.ACCEPT:
-            print(f'Accepted response')
             self.save_text_buffer(file=dialog.get_file(), buffer=buffer)
+        dialog.close()
 
     def save_text_buffer(self, file: Gio.File, buffer: Gtk.TextBuffer):
 
