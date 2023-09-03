@@ -54,8 +54,9 @@ def prepare_container_log_elements():
 
     container_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,
                             hexpand=True,
-                            vexpand=True)
-    
+                            vexpand=True,
+                            visible=False)
+
     # otherwise create new stack object for new container
     container_scroll_window = Gtk.ScrolledWindow(
         vexpand=True, hexpand=True)
@@ -89,6 +90,7 @@ def update_container_log(text_view: Gtk.TextView, new_text: str):
     container_textbuf.insert(end_iter, new_text)
     return
 
+
 def clear_container_log(text_view: Gtk.TextView):
     """Erase all content from passed text view
     """
@@ -107,8 +109,12 @@ def container_log_tailer(text_view: Gtk.TextView, container_name: str):
         GLib.idle_add(clear_container_log, text_view)
         since_time = None
 
+    text_to_append = ""
     while True:
         if current_thread.stopped():
+            # add text needing to be appended before stopping
+            if text_to_append:
+                GLib.idle_add(update_container_log, text_view, text_to_append)
             # break from infinite loop when thread is stopped (e.g. on update)
             return
         new_since_time = datetime.datetime.utcnow()
@@ -121,7 +127,18 @@ def container_log_tailer(text_view: Gtk.TextView, container_name: str):
                 new_text = container_logs.decode('utf-8')
                 # strip control characters other than newline
                 new_text = remove_control_characters(new_text)
-                GLib.idle_add(update_container_log, text_view, new_text)
+                text_to_append += new_text
+
+            if text_to_append:
+                # if we have text to add to log, and the container box is visible
+                # e.g. (stack page is currently selected)
+                if text_view.get_parent().get_parent().is_visible():
+                    GLib.idle_add(update_container_log,
+                                  text_view,
+                                  text_to_append,
+                                  priority=GLib.PRIORITY_HIGH)
+                    text_to_append = ""
+
         except:
             return
 

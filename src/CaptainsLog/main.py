@@ -114,7 +114,8 @@ class MainWindow(Gtk.ApplicationWindow):
 
         overview_box = Gtk.Box(vexpand=True,
                                hexpand=True,
-                               orientation=Gtk.Orientation.VERTICAL)
+                               orientation=Gtk.Orientation.VERTICAL,
+                               name="overview-page")
         welcome_label = Gtk.Label(name="welcome-label",
                                   label="Welcome to CaptainsLog",
                                   css_classes=["title", "overview-title"])
@@ -140,8 +141,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.stack.add_titled(
             overview_box, name="overview-page", title="Overview")
 
-        self.stack.set_visible_child(
-            self.stack.get_child_by_name("overview-page"))
+        self.stack.set_visible_child_name("overview-page")
 
         # initial stack updating
         self.update_container_stack()
@@ -203,7 +203,7 @@ class MainWindow(Gtk.ApplicationWindow):
                 continue
 
             container_box, container_info, container_log_save_button, container_log_search = prepare_container_log_elements()
-
+            container_box.set_name(container.name)
             # setup signal functionality
             container_log_save_button.connect("clicked", self.on_container_save_click, container_info)
             container_log_search.connect("activate", self.next_match, container_info)
@@ -238,8 +238,14 @@ class MainWindow(Gtk.ApplicationWindow):
 
         # update main view content based on clicked button
         # and set selected row on sidebar
-        self.stack.set_visible_child_name(button.get_name())
+        # print(f"old selected button = {self.sidebar_button_list.get_selected_row().get_name()}")
+        # print(f"new selected button = {button.get_name()}")
+        self.stack.get_child_by_name(self.sidebar_button_list.get_selected_row().get_name()).set_visible(False)
         self.sidebar_button_list.select_row(button.get_parent())
+        self.stack.get_child_by_name(self.sidebar_button_list.get_selected_row().get_name()).set_visible(True)
+        # disable visibility of current stack child, turn on visibility of new child
+        self.stack.set_visible_child_name(button.get_name())
+        # print(f"new visible child name = {self.stack.get_visible_child().get_name()}")
 
     def quit_activated(self, action, parameter):
         # print("quit")<Ctrl>
