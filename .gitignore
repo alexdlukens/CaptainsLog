@@ -3,7 +3,9 @@ typings/*
 __pycache__/
 *.py[cod]
 *$py.class
-
+*.AppImage
+AppDir/
+AppDir.bak/
 # C extensions
 *.so
 
