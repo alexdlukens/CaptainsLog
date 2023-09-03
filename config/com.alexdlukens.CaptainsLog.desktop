@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=CaptainsLog
+Comment=GUI Docker logs viewer
+TryExec=CaptainsLog
+Exec=CaptainsLog
+Icon=com.alexdlukens.CaptainsLog
+MimeType=image/x-foo;
+Categories=Utility;

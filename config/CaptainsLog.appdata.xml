@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+    <id>CaptainsLog</id>
+    <metadata_license>GPL-3.0-or-later</metadata_license>
+    <project_license>GPL-3.0-or-later</project_license>
+    <name>CaptainsLog</name>
+    <summary>CaptainsLog</summary>
+    <description>
+        <p>  A GUI Docker logs viewer
+        </p>
+    </description>
+    <launchable type="desktop-id">com.alexdlukens.CaptainsLog.desktop</launchable>
+    <url type="homepage">https://github.com/alexdlukens/CaptainsLog</url>
+    <provides>
+        <binary>CaptainsLog</binary>
+    </provides>
+</component>
