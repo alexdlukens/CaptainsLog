@@ -25,6 +25,7 @@ cp config/com.alexdlukens.CaptainsLog.svg AppDir
 cp config/com.alexdlukens.CaptainsLog.svg AppDir/usr/share/icons/hicolor/256x256/apps
 cp config/CaptainsLog.appdata.xml AppDir/usr/share/metainfo
 cp config/AppRun AppDir
+cp dist/CaptainsLog AppDir/usr/bin
 rm AppDir/usr/share/metainfo/python*
 
 # re-package app image
