@@ -192,7 +192,10 @@ class MainWindow(Gtk.ApplicationWindow):
         # update sidebar button colors, add new stack elements
         # for new docker containers
         for container in self.containers:
-            container.reload()
+            try:
+                container.reload()
+            except:
+                continue
             if container.name in self.sidebar_button_dict:
                 update_container_status_css(
                     button=self.sidebar_button_dict[container.name], status=container.status)
