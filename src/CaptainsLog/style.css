@@ -1,32 +1,58 @@
 /* Let's create a title class */
 .title {
-    font-size: 25px;
-    font-weight: bold;
+    font-size: 18px;
 }
 
 .docker-container-created {
-    background-color: lightyellow;
+    background-color: #f9f06b;
     
 }
 .docker-container-running {
-    background-color: greenyellow;
+    background-color: #8ff0a4;
     
 }
 .docker-container-restarting {
-    background-color: lightsalmon;
+    background-color: #ffbe6f;
     
 }
 .docker-container-exited {
-    background-color: lightcoral;
+    background-color: #ff7b63;
+    
+}
+.docker-container-healthy {
+    background-color: #8ff0a4;
+    
+}
+.docker-container-unhealthy {
+    background-color: #ffbe6f;
     
 }
 .docker-container-dead {
-    background-color: grey;
+    background-color: #9a9996;
     
 }
 
 .border-right {
-    border-right: 4pt;
-    border-right-style: solid;
-    border-color: @borders;
+    border-right: 4px solid @borders;
+}
+
+.overview-title {
+    font-size: 25px;
+    font-weight: bold;
+    margin-top: 50px;
+}
+
+.welcome-text {
+    font-size: 16px;
+    margin: 10px;
+}
+
+.container-text {
+    padding: 5px;
+    border: 4px solid @borders;
+    border-left: 0px;
+}
+
+.container-action-bar {
+    background-color: @headerbar_bg_color;
 }
