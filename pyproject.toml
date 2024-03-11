@@ -1,3 +1,17 @@
+[tool.poetry]
+name = "captainslog"
+version = "0.1.0"
+description = ""
+authors = ["Alex Lukens <alexdlukens@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.13"
+pygobject = "^3.48.1"
+docker = "^7.0.0"
+pyinstaller = "^6.5.0"
+
+
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
