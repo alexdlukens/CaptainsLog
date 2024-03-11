@@ -1,0 +1,26 @@
+name: Build CaptainsLog
+
+on: [push]
+
+jobs:
+  build_and_setup:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        poetry install
+
+    - name: Run build_executable.sh
+      run: |
+        chmod +x ./build_executable.sh
+        ./build_executable.sh
+
+    - name: Run setup_appdir.sh
+      run: |
+        chmod +x ./setup_appdir.sh
+        ./setup_appdir.sh
